@@ -6,7 +6,7 @@ O C-Jovem é desenvolvido pelo Governo do Ceará, por meio das secretarias da C
 No Ceará, as atividades iniciaram ainda em 2022, com a capacitação de mais de 11 mil jovens de 174 Escolas Estaduais de Educação Profissional e de Tempo Integral, em 73 municípios.
 ---
 
-# Módulo Intermediaário:
+# Módulo Intermediário:
 
 - Fundamentos de visualização de dados
 - Fundamentos de mineração de dados
