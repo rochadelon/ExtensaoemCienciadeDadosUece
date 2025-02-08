@@ -8,14 +8,14 @@ No Ceará, as atividades iniciaram ainda em 2022, com a capacitação de mais de
 
 # Módulo Intermediaário:
 
--Fundamentos de visualização de dados
--Fundamentos de mineração de dados
--Modelagem de dados
--Programação aplicada à inteligência artificial
--Aprendizado supervisionado na prática I
--Aprendizado supervisionado na prática II
--Aprendizado não supervisionado na prática I
--Aprendizado não supervisionado na prática II
--Processamento textual I
--Processamento textual II
+- Fundamentos de visualização de dados
+- Fundamentos de mineração de dados
+- Modelagem de dados
+- Programação aplicada à inteligência artificial
+- Aprendizado supervisionado na prática I
+- Aprendizado supervisionado na prática II
+- Aprendizado não supervisionado na prática I
+- Aprendizado não supervisionado na prática II
+- Processamento textual I
+- Processamento textual II
  
