@@ -1,4 +1,4 @@
-Esse repositório contém notebooks e arquivos auxiliares que foram gerados durantes a minha resolução das Oficinas e Desafior práticos do C-Jovem 2024/2025.
+Esse repositório contém notebooks e arquivos auxiliares que foram gerados durantes a minhaa resolução das Oficinas e Desafior práticos do C-Jovem 2024/2025.
 ---
 
 Programa C-Jovem
