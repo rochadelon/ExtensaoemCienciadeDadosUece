@@ -1,24 +1,99 @@
-Esse repositório contém notebooks e arquivos auxiliares que foram gerados durantes a minhaa resolução das Oficinas e Desafior práticos do C-Jovem 2024/2025.
+Repositório de Fundamentos em Ciência de Dados
+(C-Jovem | Universidade Estadual do Ceará)
 
----
+📊 Descrição
+Repositório dedicado aos projetos e práticas desenvolvidos durante o Módulo Intermediário de Ciência de Dados. Aqui você encontrará exemplos de técnicas, algoritmos e aplicações em áreas como visualização de dados, machine learning e processamento de linguagem natural (NLP).
 
-Programa C-Jovem
-O Programa C-Jovem foi criado para melhorar a qualidade de vida dos jovens e suas famílias, levando desenvolvimento econômico e social para todas as regiões do Ceará.
-O C-Jovem é desenvolvido pelo Governo do Ceará, por meio das secretarias da Ciência, Tecnologia e Educação Superior (Secitece), da Educação (Seduc), do Desenvolvimento Econômico (SDE), do Planejamento e Gestão (Seplag), do Trabalho (STE) e da Empresa de Tecnologia da Informação do Ceará (Etice), em parceria com Uece, IFCE e UFC, FIEC/Senai, Fecomércio/Senac, Sebrae, Iracema Digital e Instituto Atlântico.
-No Ceará, as atividades iniciaram ainda em 2022, com a capacitação de mais de 11 mil jovens de 174 Escolas Estaduais de Educação Profissional e de Tempo Integral, em 73 municípios.
+📂 Estrutura do Repositório
+Cada pasta corresponde a um tópico estudado, contendo:
 
----
+Códigos-fonte (Jupyter Notebooks ou scripts em Python).
 
-# Módulo Intermediário:
+Datasets utilizados (ou links para acesso).
 
-- Fundamentos de visualização de dados
-- Fundamentos de mineração de dados
-- Modelagem de dados
-- Programação aplicada à inteligência artificial
-- Aprendizado supervisionado na prática I
-- Aprendizado supervisionado na prática II
-- Aprendizado não supervisionado na prática I
-- Aprendizado não supervisionado na prática II
-- Processamento textual I
-- Processamento textual II
- 
+Documentação explicativa dos projetos.
+
+Tópicos Abordados
+Fundamentos de Visualização de Dados
+
+Criação de gráficos com Matplotlib e Seaborn.
+
+Análise exploratória de dados (EDA) e construção de dashboards.
+
+Fundamentos de Mineração de Dados
+
+Padrões de associação com algoritmo Apriori (ex: análise de cesta de compras).
+
+Modelagem de Dados
+
+Pré-processamento: tratamento de dados ausentes, One-Hot Encoding, Label Encoder.
+
+Programação Aplicada à Inteligência Artificial
+
+Classificação de imagens (ex: cães vs. gatos) com redes neurais (Xception).
+
+Aprendizado Supervisionado
+
+Parte I: Regressão Linear para previsão de preços de imóveis.
+
+Parte II: Regressão Logística para classificação de spam.
+
+Aprendizado Não Supervisionado
+
+Parte I: Clusterização com K-Means (segmentação de clientes).
+
+Parte II: Redução de dimensionalidade com PCA.
+
+Processamento Textual
+
+Parte I: Análise de sentimentos com Naive Bayes + TF-IDF.
+
+Parte II: Chatbot adaptativo usando RNN e Word2Vec.
+
+🛠️ Tecnologias Utilizadas
+Linguagens: Python
+
+Bibliotecas: Pandas, NumPy, Scikit-learn, TensorFlow/Keras, NLTK, SpaCy.
+
+Ferramentas: Jupyter Notebook, Google Colab, VS Code.
+
+Python
+Scikit-learn
+
+🚀 Como Executar os Projetos
+Clone o repositório:
+
+bash
+Copy
+git clone https://github.com/seu-usuario/nome-do-repositorio.git  
+Instale as dependências:
+
+bash
+Copy
+pip install -r requirements.txt  
+Abra os Jupyter Notebooks da pasta desejada e execute célula por célula.
+
+📌 Exemplos de Projetos
+Análise de Sentimentos:
+
+python
+Copy
+from sklearn.naive_bayes import MultinomialNB  
+from sklearn.feature_extraction.text import TfidfVectorizer  
+
+# Código simplificado para análise de sentimentos  
+vectorizer = TfidfVectorizer()  
+X = vectorizer.fit_transform(textos)  
+modelo = MultinomialNB().fit(X, rotulos)  
+Clusterização com K-Means:
+Exemplo de Gráfico de Clusterização
+
+📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
+
+📧 Contato
+Feito com ❤️ por [Seu Nome]
+
+LinkedIn:  https://www.linkedin.com/in/delonrocha/
+
+Email: alandelonsrocha@gmail.com
