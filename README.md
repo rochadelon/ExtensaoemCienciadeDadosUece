@@ -1,4 +1,4 @@
-# Repositório de Fundamentos em Ciência de Dados
+# Extensão em Ciência de Dados
 ---
 (C-Jovem | Universidade Estadual do Ceará)
 
