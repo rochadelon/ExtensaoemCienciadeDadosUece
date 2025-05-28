@@ -1,0 +1,24 @@
+# API Keys e arquivos sensíveis
+api_key.txt
+*.key
+.env
+
+# Arquivos de checkpoint
+*checkpoint*.csv
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Resultados de análises (opcional - remova se quiser versionar)
+*_resultado.csv
+*_analise.csv
+nanomateriais_identificados*.csv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

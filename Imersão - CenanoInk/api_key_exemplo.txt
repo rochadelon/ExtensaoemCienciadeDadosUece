@@ -1,0 +1,13 @@
+AIzaSyA_exemplo_da_sua_api_key_aqui_substitua_por_sua_key_real
+
+INSTRUÇÕES:
+1. Substitua o texto acima pela sua API key real do Google Gemini
+2. Mantenha apenas a API key (sem aspas, sem espaços extras)
+3. Salve este arquivo como 'api_key.txt'
+4. Delete esta linha de instruções
+
+Como obter sua API key:
+- Acesse: https://makersuite.google.com/app/apikey
+- Faça login com sua conta Google
+- Clique em "Create API Key"
+- Copie a key gerada e cole aqui
