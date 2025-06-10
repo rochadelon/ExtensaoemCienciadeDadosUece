@@ -1,0 +1,212 @@
+import pandas as pd
+import json
+from typing import Dict, List, Any
+from sklearn.ensemble import RandomForestClassifier  # Exemplo de modelo de ML
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+class MLRecommender:
+    """
+    Um sistema de recomendação que utiliza um modelo de Machine Learning treinado
+    para prever o nanomaterial mais adequado e, em seguida, monta uma recomendação
+    estruturada a partir de uma base de conhecimento.
+    """
+
+    def __init__(self, knowledge_base_df: pd.DataFrame):
+        """
+        Inicializa o recomendador e treina um modelo de ML de exemplo.
+
+        Args:
+            knowledge_base_df (pd.DataFrame): DataFrame contendo os dados de artigos
+                                              para treinar o modelo e consultar.
+        """
+        if knowledge_base_df.empty:
+            raise ValueError("A base de conhecimento (DataFrame) não pode estar vazia.")
+        
+        # O seu DataFrame com 19 campos extraídos
+        self.kb = knowledge_base_df
+        self.model = None
+        self.feature_names = None
+
+        # Base de templates para as justificativas
+        self.template_db = self._create_template_database()
+
+        print("🔧 Preparando e treinando o modelo de Machine Learning de exemplo...")
+        self._train_model()
+        print("✅ Modelo de ML treinado e pronto para uso.")
+
+
+    def _train_model(self):
+        """
+        Função interna para treinar um modelo de ML de exemplo.
+        Num cenário real, você carregaria seu 'ensemble_model.py' já treinado aqui.
+        """
+        # 1. Definir features (X) e target (y)
+        # Vamos usar características do ambiente para prever o 'Nanomaterial_Principal'
+        features = ['localizacao', 'exposicao_agua', 'risco_abrasao', 'substrato']
+        target = 'Nanomaterial_Principal'
+
+        # Criar um DataFrame de treino a partir da base de conhecimento
+        # Isto é uma simplificação. Na realidade, os dados do ambiente viriam
+        # de colunas extraídas dos artigos.
+        train_data = {
+            'localizacao': ['externo', 'interno', 'externo', 'interno', 'externo'],
+            'exposicao_agua': ['imersao_constante', 'umidade_alta', 'respingos', 'respingos', 'imersao_constante'],
+            'risco_abrasao': ['alto', 'baixo', 'medio', 'baixo', 'alto'],
+            'substrato': ['metal', 'concreto', 'polimero', 'madeira', 'concreto'],
+            'Nanomaterial_Principal': ['TiO2', 'AgNPs', 'SiO2', 'ZnO', 'Graphene'] 
+        }
+        df_train = pd.DataFrame(train_data)
+
+        X = df_train[features]
+        y = df_train[target]
+        
+        # 2. Criar um pipeline de pré-processamento
+        # Usaremos OneHotEncoder para transformar as variáveis categóricas em numéricas
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('cat', OneHotEncoder(handle_unknown='ignore'), features)
+            ])
+
+        # 3. Montar o pipeline final com o modelo
+        # Usaremos um RandomForest como exemplo
+        self.model = Pipeline(steps=[('preprocessor', preprocessor),
+                                     ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))])
+
+        # 4. Treinar o modelo
+        self.model.fit(X, y)
+        self.feature_names = features
+
+
+    def _create_template_database(self) -> Dict[str, Dict[str, str]]:
+        """Cria uma base de dados de templates com justificativas pré-escritas."""
+        return {
+            "TiO2": {
+                "funcao": "Proteção UV e Fotocatálise",
+                "analise": "O Dióxido de Titânio (TiO2) é a escolha padrão para aplicações externas devido à sua excepcional capacidade de absorver radiação UV, prevenindo a degradação do substrato. Adicionalmente, a sua propriedade fotocatalítica decompõe poluentes orgânicos na superfície, conferindo um efeito auto-limpante."
+            },
+            "AgNPs": {
+                "funcao": "Ação Antimicrobiana de Amplo Espectro",
+                "analise": "Nanopartículas de Prata (AgNPs) são recomendadas para ambientes internos com risco de contaminação microbiológica. Elas liberam íons de prata (Ag+) que destroem a membrana celular de bactérias, fungos e mofos, garantindo um ambiente mais higiénico. São ideais para locais húmidos e com pouca ventilação."
+            },
+            "SiO2": {
+                "funcao": "Hidrofobicidade e Resistência à Abrasão",
+                "analise": "O Dióxido de Silício (SiO2) é excelente para criar superfícies super-hidrofóbicas (efeito lótus), repelindo a água e evitando manchas e corrosão. A sua dureza intrínseca também aumenta significativamente a resistência a riscos e à abrasão, sendo ideal para superfícies com tráfego moderado."
+            },
+            "ZnO": {
+                "funcao": "Proteção UV e Propriedade Antifúngica",
+                "analise": "O Óxido de Zinco (ZnO) é uma alternativa eficaz ao TiO2 para proteção UV, sendo transparente no espectro visível. Possui também uma forte ação antifúngica, o que o torna uma excelente escolha para substratos como madeira em ambientes húmidos."
+            },
+            "Graphene": {
+                "funcao": "Barreira Anticorrosiva e Condutividade",
+                "analise": "O Grafeno cria uma barreira impermeável a gases e líquidos, oferecendo uma proteção anticorrosiva superior para substratos metálicos em ambientes agressivos. É a solução de ponta para aplicações de máxima durabilidade."
+            },
+            "default": {
+                "funcao": "Funcionalidade Geral",
+                "analise": "A partícula recomendada oferece uma boa combinação de propriedades para as condições especificadas, com base nos padrões identificados na literatura científica."
+            }
+        }
+
+
+    def recommend(self, user_query: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Executa o fluxo de recomendação usando o modelo de ML treinado.
+
+        Args:
+            user_query (Dict[str, Any]): A consulta do usuário.
+
+        Returns:
+            Dict[str, Any]: A recomendação final estruturada.
+        """
+        print("\n🔍 Iniciando processo de recomendação com modelo de ML...")
+        
+        # 1. Preparar os dados da consulta do usuário para o modelo
+        try:
+            # Extrair as features da consulta do usuário
+            query_features = {
+                'localizacao': user_query.get('ambiente', {}).get('localizacao'),
+                'exposicao_agua': user_query.get('ambiente', {}).get('exposicao_agua'),
+                'risco_abrasao': user_query.get('ambiente', {}).get('risco_abrasao'),
+                'substrato': user_query.get('substrato', {}).get('tipo')
+            }
+            query_df = pd.DataFrame([query_features], columns=self.feature_names)
+        except Exception as e:
+            return {"erro": "A consulta do usuário não contém todas as features necessárias.", "detalhes": str(e)}
+
+        # 2. Fazer a previsão com o modelo de ML treinado
+        print(f"🤖 Fazendo previsão para a entrada: {query_features}")
+        predicted_nanomaterial = self.model.predict(query_df)[0]
+        print(f"✅ Previsão do modelo de ML: '{predicted_nanomaterial}'")
+
+        # 3. Buscar na base de templates e montar a recomendação
+        template = self.template_db.get(predicted_nanomaterial, self.template_db['default'])
+
+        recommendation = {
+          "metodo_recomendacao": "Previsão por Machine Learning",
+          "previsao_do_modelo": predicted_nanomaterial,
+          "recomendacao_principal": {
+            "particulas": [
+              {
+                "nome": predicted_nanomaterial,
+                "funcao": template["funcao"],
+                "concentracao_sugerida_percentual_peso": "1 - 5% (valor típico, necessita otimização)"
+              }
+            ]
+          },
+          "analise_tecnica": template["analise"]
+        }
+        
+        return recommendation
+
+
+# --- Exemplo de Uso ---
+if __name__ == '__main__':
+    # **ETAPA 1: Carregar a Base de Conhecimento**
+    # Em um cenário real, você carregaria seu DataFrame com os 19 campos aqui.
+    # df_knowledge_base = pd.read_csv('caminho/para/seu/dataset_com_19_campos.csv')
+    
+    # Para este exemplo, vamos criar um DataFrame fictício (DUMMY) que contém
+    # as colunas necessárias para a busca.
+    data = {
+        'Nanomaterial_Principal': ['TiO2', 'AgNPs', 'SiO2', 'ZnO', 'Graphene'],
+        'Funcionalidade_Principal': ['uv-resistance', 'antimicrobial', 'hydrophobic', 'antifungal', 'anticorrosion'],
+    }
+    df_knowledge_base = pd.DataFrame(data)
+    print(" अंबिकापुर Carregada base de conhecimento Fictícia para demonstração.")
+
+    # **ETAPA 2: Instanciar o Recomendador (treina o modelo de exemplo)**
+    ml_recommender = MLRecommender(df_knowledge_base)
+    
+    # **ETAPA 3: Definir a Consulta do Usuário**
+    user_query = {
+      "ambiente": {
+        "localizacao": "interno",
+        "exposicao_agua": "umidade_alta",
+        "risco_abrasao": "baixo",
+        "exposicao_uv": "baixa" 
+      },
+      "substrato": {
+        "tipo": "concreto"
+      },
+      "desempenho_desejado": { # Nota: Estes campos não são usados pelo modelo de ML neste exemplo
+        "propriedade_primaria": "antimicrobial",
+        "propriedades_secundarias": ["hydrophobic"]
+      }
+    }
+
+    # **ETAPA 4: Obter a Recomendação**
+    final_recommendation = ml_recommender.recommend(user_query)
+    
+    # Imprimir o resultado final
+    print("\n--- RECOMENDAÇÃO FINAL (BASEADA EM ML) ---")
+    print(json.dumps(final_recommendation, indent=2, ensure_ascii=False))
+
+    # --- Outro exemplo ---
+    user_query_externa = {
+        "ambiente": {"localizacao": "externo", "exposicao_agua": "imersao_constante", "risco_abrasao": "alto"},
+        "substrato": {"tipo": "metal"}
+    }
+    final_recommendation_2 = ml_recommender.recommend(user_query_externa)
+    print("\n--- RECOMENDAÇÃO FINAL 2 (BASEADA EM ML) ---")
+    print(json.dumps(final_recommendation_2, indent=2, ensure_ascii=False))
