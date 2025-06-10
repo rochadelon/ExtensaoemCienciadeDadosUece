@@ -1,0 +1,218 @@
+import pandas as pd
+import json
+import os
+import google.generativeai as genai
+from typing import Dict, List, Any
+
+class NanoCoatingRecommender:
+    """
+    Um sistema de recomendação que utiliza uma base de conhecimento de artigos científicos
+    e um modelo de IA generativa (Google Gemini) para sugerir formulações de tintas
+    nanotecnológicas com base nas necessidades do usuário.
+    """
+
+    def __init__(self, knowledge_base_df: pd.DataFrame, gemini_api_key: str):
+        """
+        Inicializa o recomendador.
+
+        Args:
+            knowledge_base_df (pd.DataFrame): DataFrame contendo os 19 campos
+                                              extraídos da literatura científica.
+            gemini_api_key (str): Sua chave de API do Google para o Gemini.
+        """
+        if knowledge_base_df.empty:
+            raise ValueError("A base de conhecimento (DataFrame) não pode estar vazia.")
+        self.kb = knowledge_base_df
+        
+        try:
+            genai.configure(api_key=gemini_api_key)
+            self.model = genai.GenerativeModel('gemini-1.5-pro-latest')
+            print("✅ Modelo Gemini inicializado com sucesso.")
+        except Exception as e:
+            raise ConnectionError(f"Falha ao configurar o modelo Gemini. Verifique sua API Key. Erro: {e}")
+
+    def _find_relevant_articles(self, query: Dict[str, Any], top_n: int = 5) -> pd.DataFrame:
+        """
+        Encontra os artigos mais relevantes na base de conhecimento com base na consulta do usuário.
+        Esta é uma busca baseada em pontuação de relevância.
+        """
+        scores = pd.Series([0] * len(self.kb), index=self.kb.index)
+
+        # Critério primário: Propriedade principal (maior peso)
+        prop_primaria = query.get('desempenho_desejado', {}).get('propriedade_primaria', '').lower()
+        if prop_primaria:
+            # Assumindo que seu DataFrame extraído tenha uma coluna 'Funcionalidade_Principal'
+            scores += self.kb['Funcionalidade_Principal'].str.lower().contains(prop_primaria, na=False) * 10
+
+        # Critérios secundários
+        prop_secundarias = query.get('desempenho_desejado', {}).get('propriedades_secundarias', [])
+        for prop in prop_secundarias:
+            scores += self.kb['Funcionalidades_Secundarias'].str.lower().contains(prop.lower(), na=False) * 5
+
+        # Critério de substrato
+        substrato = query.get('substrato', {}).get('tipo', '').lower()
+        if substrato:
+            scores += self.kb['Substrato_Aplicado'].str.lower().contains(substrato, na=False) * 3
+
+        self.kb['relevance_score'] = scores
+        relevant_df = self.kb.sort_values(by='relevance_score', ascending=False).head(top_n)
+        
+        print(f"ℹ️  Foram encontrados {len(relevant_df[relevant_df['relevance_score'] > 0])} artigos relevantes.")
+        return relevant_df
+
+    def _build_recommendation_prompt(self, user_query: Dict[str, Any], relevant_articles: pd.DataFrame) -> str:
+        """
+        Constrói o prompt final para o Gemini, combinando a persona, a consulta do usuário
+        e os artigos relevantes como contexto.
+        """
+        # Formata a consulta do usuário para exibição clara
+        query_str = json.dumps(user_query, indent=2, ensure_ascii=False)
+
+        # Formata os artigos relevantes para servirem de contexto
+        context_str = "\n\n---\n\n".join(
+            f"**Artigo de Referência {i+1} (Score: {row.relevance_score:.0f})**\n"
+            f"- **Título:** {row.get('Article Title', 'N/A')}\n"
+            f"- **Nanomaterial Principal:** {row.get('Nanomaterial_Principal', 'N/A')}\n"
+            f"- **Funcionalidade Principal:** {row.get('Funcionalidade_Principal', 'N/A')}\n"
+            f"- **Resumo:** {row.get('Abstract', 'N/A')[:500]}..."
+            for i, row in enumerate(relevant_articles.itertuples())
+        )
+
+        # O prompt mestre
+        prompt = f"""
+        **PERSONA E OBJETIVO:**
+        Você é um cientista de materiais sênior, especialista em nanotecnologia e formulação de tintas funcionais. Seu objetivo é atuar como um consultor técnico, fornecendo recomendações precisas e práticas.
+
+        **PROBLEMA DO CLIENTE:**
+        Um cliente precisa desenvolver uma tinta com as seguintes características e para o seguinte ambiente:
+        ```json
+        {query_str}
+        ```
+
+        **BASE DE CONHECIMENTO (EVIDÊNCIA TÉCNICA):**
+        Para te ajudar, realizei uma busca em um banco de dados de artigos científicos e encontrei os seguintes trabalhos como os mais relevantes para este problema. Use as informações abaixo como sua principal fonte de inspiração e evidência.
+        
+        {context_str}
+
+        **SUA TAREFA:**
+        1.  Analise o problema do cliente.
+        2.  Sintetize as informações dos artigos de referência.
+        3.  Formule uma recomendação técnica detalhada.
+        
+        **FORMATO DE SAÍDA OBRIGATÓRIO:**
+        Sua resposta DEVE ser um objeto JSON bem formado, sem nenhum texto ou explicação antes ou depois. Use exatamente a estrutura a seguir:
+
+        ```json
+        {{
+          "recomendacao_principal": {{
+            "particulas": [
+              {{
+                "nome": "Nome da Nanopartícula",
+                "funcao": "Descrição da função (ex: Agente Antimicrobiano Primário)",
+                "concentracao_sugerida_percentual_peso": "Faixa de concentração (ex: 0.1 - 0.5%)"
+              }}
+            ]
+          }},
+          "recomendacoes_alternativas": [
+            {{
+              "particulas": [
+                {{
+                  "nome": "Nome da Nanopartícula Alternativa",
+                  "funcao": "Descrição da função",
+                  "justificativa": "Motivo pelo qual é uma boa alternativa (ex: Custo menor, sinergia)."
+                }}
+              ]
+            }}
+          ],
+          "analise_tecnica": "Uma explicação detalhada conectando o problema do cliente, as evidências dos artigos e a lógica por trás da sua recomendação. Explique o mecanismo de ação das partículas escolhidas."
+        }}
+        ```
+        """
+        return prompt
+
+    def recommend(self, user_query: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Executa o fluxo completo de recomendação.
+
+        Args:
+            user_query (Dict[str, Any]): A consulta do usuário no formato JSON especificado.
+
+        Returns:
+            Dict[str, Any]: A recomendação final em formato de dicionário Python.
+        """
+        print("\n🔍 Iniciando processo de recomendação...")
+        
+        # 1. Encontrar artigos relevantes
+        relevant_articles = self._find_relevant_articles(user_query)
+        if relevant_articles.empty or relevant_articles['relevance_score'].max() == 0:
+            return {"erro": "Não foi possível encontrar artigos relevantes na base de conhecimento para esta consulta."}
+
+        # 2. Construir o prompt
+        prompt = self._build_recommendation_prompt(user_query, relevant_articles)
+        
+        print("🤖 Enviando requisição para o modelo Gemini com contexto relevante...")
+        
+        # 3. Chamar a IA Generativa
+        try:
+            response = self.model.generate_content(prompt)
+            # Limpeza para extrair apenas o JSON da resposta
+            json_text = response.text.strip().replace("```json", "").replace("```", "").strip()
+            recommendation = json.loads(json_text)
+            print("✅ Recomendação recebida e processada com sucesso!")
+            return recommendation
+        except Exception as e:
+            print(f"❌ Erro ao processar a resposta da IA: {e}")
+            return {"erro": "Falha ao gerar ou processar a recomendação da IA.", "detalhes": str(e)}
+
+# --- Exemplo de Uso ---
+if __name__ == '__main__':
+    # **ETAPA 1: Simulação do Ambiente**
+    # Em um cenário real, você carregaria seu DataFrame com os 19 campos aqui.
+    # df_knowledge_base = pd.read_csv('caminho/para/seu/dataset_com_19_campos.csv')
+    
+    # Para este exemplo, vamos criar um DataFrame fictício (DUMMY)
+    data = {
+        'Article Title': ["Antimicrobial coatings with AgNPs", "Hydrophobic surfaces with SiO2", "UV-resistant paints with ZnO and TiO2", "Combined antimicrobial and hydrophobic coatings"],
+        'Abstract': ["Silver nanoparticles (AgNPs) show great promise...", "Silica nanoparticles create superhydrophobic surfaces...", "Zinc oxide and Titanium dioxide protect against UV...", "A novel coating combining AgNPs and functionalized SiO2..."],
+        'Nanomaterial_Principal': ['AgNPs', 'SiO2', 'ZnO', 'AgNPs'],
+        'Funcionalidade_Principal': ['antimicrobial', 'hydrophobic', 'uv-resistance', 'antimicrobial'],
+        'Funcionalidades_Secundarias': [['corrosion-resistance'], ['anti-icing'], ['photocatalytic'], ['hydrophobic', 'anti-fouling']],
+        'Substrato_Aplicado': ['metal', 'glass', 'polymer', 'concrete']
+    }
+    df_knowledge_base = pd.DataFrame(data)
+    print(" अंबिकापुर Carregada base de conhecimento Fictícia para demonstração.")
+
+    # **ETAPA 2: Definição da Consulta do Usuário**
+    # Esta é a entrada que viria da sua interface ou API.
+    user_query = {
+      "ambiente": {
+        "localizacao": "interno",
+        "exposicao_agua": "umidade_alta",
+        "exposicao_uv": "baixa",
+        "faixa_temperatura_celsius": [5, 15]
+      },
+      "substrato": {
+        "tipo": "concreto",
+        "condicao": "novo"
+      },
+      "desempenho_desejado": {
+        "propriedade_primaria": "antimicrobial",
+        "propriedades_secundarias": ["hydrophobic"]
+      }
+    }
+    
+    # **ETAPA 3: Execução do Modelo de Recomendação**
+    # Obtenha sua API Key do ambiente
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    
+    if not GEMINI_API_KEY:
+        print("\n⚠️ AVISO: A variável de ambiente GEMINI_API_KEY não está definida.")
+        print("O modelo não poderá ser executado. Por favor, configure a chave de API.")
+    else:
+        # Instanciar e executar o recomendador
+        recommender = NanoCoatingRecommender(df_knowledge_base, GEMINI_API_KEY)
+        final_recommendation = recommender.recommend(user_query)
+        
+        # Imprimir o resultado final
+        print("\n--- RECOMENDAÇÃO FINAL ---")
+        print(json.dumps(final_recommendation, indent=2, ensure_ascii=False))
