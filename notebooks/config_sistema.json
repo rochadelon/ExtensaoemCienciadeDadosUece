@@ -1,0 +1,167 @@
+{
+  "sistema_configurado": true,
+  "api_configurada": true,
+  "timestamp_configuracao": "2025-06-11T09:42:42.810152",
+  "validacao": {
+    "api_configurada": true,
+    "diretorios_existem": true,
+    "excel_files_encontrados": true,
+    "dependencias_instaladas": true,
+    "espaco_disco_suficiente": true
+  },
+  "config": {
+    "rate_limiting": {
+      "delay_between_requests": 2.5,
+      "max_requests_per_minute": 25,
+      "max_requests_per_day": 1400,
+      "timeout_request": 30,
+      "max_retries": 3,
+      "backoff_factor": 2
+    },
+    "checkpoint": {
+      "interval": 25,
+      "directory": "checkpoints/",
+      "prefix": "checkpoint_",
+      "max_files": 10
+    },
+    "analysis": {
+      "min_abstract_length": 50,
+      "score_threshold_high": 5,
+      "score_threshold_medium": 2,
+      "use_title_boost": true,
+      "title_boost_factor": 2
+    }
+  },
+  "paths": {
+    "data_raw": "/home/delon/Modelos/modeloCenanoInk/data/raw/",
+    "excel_files": "/home/delon/Modelos/modeloCenanoInk/data/raw/arquivos_excel_artigo_cienciometrico/",
+    "processed": "/home/delon/Modelos/modeloCenanoInk/data/processed/",
+    "results": "/home/delon/Modelos/modeloCenanoInk/results/",
+    "notebooks": "/home/delon/Modelos/modeloCenanoInk/notebooks/"
+  },
+  "nanomateriais": {
+    "oxidos_metalicos": [
+      "TiO2",
+      "ZnO",
+      "Al2O3",
+      "SiO2",
+      "Fe2O3",
+      "CeO2",
+      "Cr2O3",
+      "titanium dioxide",
+      "zinc oxide",
+      "aluminum oxide",
+      "silica",
+      "iron oxide",
+      "cerium oxide",
+      "chromium oxide"
+    ],
+    "carbono": [
+      "graphene",
+      "grafeno",
+      "CNT",
+      "carbon nanotube",
+      "carbon fiber",
+      "fullerene",
+      "carbon black",
+      "carbon dot",
+      "graphene oxide",
+      "reduced graphene oxide",
+      "rGO",
+      "MWCNT",
+      "SWCNT"
+    ],
+    "metais_nobres": [
+      "Ag",
+      "Au",
+      "Pt",
+      "Pd",
+      "silver",
+      "gold",
+      "platinum",
+      "palladium",
+      "silver nanoparticle",
+      "gold nanoparticle",
+      "AgNP",
+      "AuNP"
+    ],
+    "polimeros": [
+      "PMMA",
+      "PVA",
+      "PVP",
+      "PEG",
+      "chitosan",
+      "alginate",
+      "polyurethane",
+      "epoxy",
+      "acrylic",
+      "polyethylene",
+      "polypropylene",
+      "nylon"
+    ],
+    "ceramicos": [
+      "hydroxyapatite",
+      "zirconia",
+      "alumina",
+      "silicon carbide",
+      "silicon nitride",
+      "boron nitride",
+      "titanium carbide"
+    ],
+    "compositos": [
+      "nanocomposite",
+      "hybrid material",
+      "core-shell",
+      "layered material",
+      "intercalated",
+      "exfoliated"
+    ]
+  },
+  "palavras_chave": {
+    "coating_terms": [
+      "coating",
+      "paint",
+      "revestimento",
+      "tinta",
+      "surface treatment",
+      "protective coating",
+      "functional coating",
+      "thin film"
+    ],
+    "propriedades_funcionais": [
+      "anticorrosive",
+      "antimicrobial",
+      "self-cleaning",
+      "superhydrophobic",
+      "UV protection",
+      "thermal barrier",
+      "electrical conductivity",
+      "magnetic",
+      "photocatalytic",
+      "antifouling"
+    ],
+    "aplicacoes": [
+      "automotive",
+      "marine",
+      "aerospace",
+      "biomedical",
+      "electronics",
+      "construction",
+      "textile",
+      "packaging",
+      "energy storage"
+    ],
+    "tecnicas_preparacao": [
+      "sol-gel",
+      "spray coating",
+      "dip coating",
+      "spin coating",
+      "electrodeposition",
+      "plasma spraying",
+      "CVD",
+      "PVD",
+      "layer-by-layer",
+      "self-assembly"
+    ]
+  }
+}
